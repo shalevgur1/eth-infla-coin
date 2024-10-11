@@ -1,9 +1,9 @@
-const CocoToken = artifacts.require("CocoToken");
+const InflaToken = artifacts.require("InflaToken");
  
-const tokenCap = 100000000;
-const tokenBlockReward = 50;
+const initialSupply = 0;
+const blockReward = 0;
 
 module.exports = function(deployer) {
-    deployer.deploy(CocoToken, tokenCap, tokenBlockReward);
-  };
+    deployer.deploy(InflaToken, initialSupply, blockReward);
+};
   
