@@ -34,21 +34,34 @@ contract InflaToken is ERC20Burnable {
         BLOCK_REWARD = reward * TOKEN_MULTIPLIER;
     }
 
-    function _mintMinerReward() internal {
-        //TODO: change for taking supply from the central bank instead of minting new coins
-        _mint(block.coinbase, BLOCK_REWARD);
+    function getMinerAddr () public view onlycentralBank returns (address) {
+        // Returns the miner address
+        return block.coinbase;
+    }
+
+    function _minerReward() internal {
+        // Transfer reward to miner from the central bank account
+        transferFrom(centralBank, block.coinbase, BLOCK_REWARD);
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual override(ERC20) {
         // A "hook" function that is being invoked before transactions to reward the miner.
         if(from != address(0) && block.coinbase != address(0) && to != block.coinbase) {
-            _mintMinerReward();
+            _minerReward();
         }
         super._beforeTokenTransfer(from, to, value);
     }
 
-    function transfer(address to, uint256 value) public virtual override(ERC20) returns(bool){
-        return super.transfer(to, value * TOKEN_MULTIPLIER);
+    function transfer(address to, uint256 value) public virtual override(ERC20) returns(bool) {
+        // Transfer from the caller for this function
+        if (to != address(0)) return super.transfer(to, value * TOKEN_MULTIPLIER);
+        return false;
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual override(ERC20) returns (bool) {
+        // Transfer from a defiend sender to a defined recipient
+        if (sender != address(0) && recipient != address(0)) return super.transferFrom(sender, recipient, amount);
+        return false;
     }
 
     function destroy() public onlycentralBank() {
@@ -64,4 +77,10 @@ contract InflaToken is ERC20Burnable {
         require(msg.sender == centralBank, "Only the centralBank can call this function.");
         _;
     }
+
+// -----------------------------------
+// EVENTS
+// -----------------------------------
+
+    event DebugInfo(bool result, address miner);
 }

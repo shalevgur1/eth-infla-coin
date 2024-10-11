@@ -36,9 +36,7 @@ contract("InflaToken", (accounts) => {
 
     it("should allow transfer of tokens", async () => {
         // Transfer 10 tokens from the owner to addr1
-        const result = await token.transfer(addr1, 10);
-        
-        console.log(result);
+        await token.transfer(addr1, 10);
 
         const balance1 = await token.balanceOf(owner);
         const balance2 = await token.balanceOf(addr1);
@@ -61,5 +59,18 @@ contract("InflaToken", (accounts) => {
             );
         }
     });
+
+    // it("should mint miner rewards on transfer", async () => {
+    //     // let minerAddr = await token.getMinerAddr(); // web3.eth.getCoinbase()
+    //     // console.log(minerAddr);
+    //     // const initialMinerBalance = await token.balanceOf(minerAddr);
+    //     // console.log(initialMinerBalance);
+    //     const result = await token.transfer(addr1, 10);
+    //     result.logs.forEach(log => {
+    //         if (log.event === "DebugInfo") {
+    //             console.log("Debug Info:", log.args);
+    //         }
+    //     });
+    // });
     
 });
