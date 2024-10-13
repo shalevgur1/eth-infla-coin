@@ -1,9 +1,13 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
-    "solc": "^0.8.28"
+    "solc": "^0.8.28",
+    "web3": "^4.13.0"
   },
   "scripts": {
-    "start": "cd web-app && npm start"
+    "start": "cd web-app && npm start",
+    "migrate": "truffle migrate",
+    "copy-artifacts": "cp -r build/contracts/* web-app/src/artifacts/",
+    "deploy": "npm run migrate && npm run copy-artifacts"
   }
 }

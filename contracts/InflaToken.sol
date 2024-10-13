@@ -64,6 +64,10 @@ contract InflaToken is ERC20Burnable {
         return false;
     }
 
+    function getSomeText() public pure returns (string memory) {
+        return "Successful interaction with contract";
+    }
+
     function destroy() public onlycentralBank() {
         // Allow the option to destroy the token supply when it goes on to the blockchain.
         selfdestruct(centralBank);

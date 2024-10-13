@@ -4,14 +4,6 @@ import './styles/main.css';
 import App from "./components/App";
 
 // -----------------------------------
-// MODIFIERS
-// -----------------------------------
-
-const FAUCET_AMOUNT = 100;
-export default FAUCET_AMOUNT;
-
-
-// -----------------------------------
 // APPLICATION ENTRY POINT
 // -----------------------------------
 

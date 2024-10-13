@@ -1,10 +1,14 @@
-import React from "react";
-import FAUCET_AMOUNT from "..";
+import React, { useState } from "react";
+import { FAUCET_AMOUNT } from "../config/constants";
 
 function Faucet() {
 
-  async function handleClick(event) {
+  const [isDisabled, setDisabled] = useState(false);
+  const [lableText, setLableText] = useState(`Get your free InflaToken tokens here! Claim ${FAUCET_AMOUNT.toString()} INF coins to your account.`);
 
+  async function handleClick(event) {
+    setDisabled(true);
+    // setDisabled(false);
   }
 
   return (
@@ -15,9 +19,12 @@ function Faucet() {
         </span>
         Faucet
       </h2>
-      <label>Get your free InflaToken tokens here! Claim {FAUCET_AMOUNT.toString()} INF coins to your account.</label>
+      <label>{lableText}</label>
       <p className="trade-buttons">
-        <button id="btn-payout" onClick={handleClick}>
+        <button 
+        id="btn-payout"
+        onClick={handleClick}
+        disabled={isDisabled}>
           Gimme gimme
         </button>
       </p>
