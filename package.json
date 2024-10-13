@@ -2,5 +2,8 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
     "solc": "^0.8.28"
+  },
+  "scripts": {
+    "start": "cd web-app && npm start"
   }
 }
