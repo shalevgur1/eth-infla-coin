@@ -179,4 +179,8 @@ html {
     display: table;
     margin: auto;
   }
+
+  .small-heading {
+    font-size: 1.9em;
+  }
   

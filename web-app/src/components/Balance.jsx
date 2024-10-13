@@ -14,7 +14,7 @@ function Balance() {
         <input
           id="balance-principal-id"
           type="text"
-          placeholder="Enter a Principal ID"
+          placeholder="Enter a account address"
         />
       </p>
       <p className="trade-buttons">

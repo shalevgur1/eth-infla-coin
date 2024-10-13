@@ -1,4 +1,5 @@
 import React from "react";
+import FAUCET_AMOUNT from "..";
 
 function Faucet() {
 
@@ -14,7 +15,7 @@ function Faucet() {
         </span>
         Faucet
       </h2>
-      <label>Get your free DAngela tokens here! Claim 10,000 DANG coins to your account.</label>
+      <label>Get your free InflaToken tokens here! Claim {FAUCET_AMOUNT.toString()} INF coins to your account.</label>
       <p className="trade-buttons">
         <button id="btn-payout" onClick={handleClick}>
           Gimme gimme
