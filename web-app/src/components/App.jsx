@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import Faucet from "./Faucet";
 import Balance from "./Balance";
@@ -9,15 +9,23 @@ import InflaToken from "../artifacts/InflaToken.json";
 
 function App() {
 
+  const [web3Client, setWeb3Client] = useState();
+  const [infContract, setInfContract] = useState();
+
   useEffect( () => {
     async function init() {
-      // Initialize Web3 - init interaction with contract
-      const web3Client = new Web3(Web3.givenProvider || LOCAL_NETWORK); // Metamask or Ganache
-      const accounts = await web3Client.eth.getAccounts();
+      // Initialize Web3 client
+      const web3 = new Web3(Web3.givenProvider || LOCAL_NETWORK); // Metamask or Ganache
+      setWeb3Client(web3);
+      // Get accounts array
+      const accounts = await web3.eth.getAccounts();
       console.log(accounts);
-      const infContract = new web3Client.eth.Contract(InflaToken.abi, INF_CONTRACT_ADDRESS); // Contract address
-      const resultText = await infContract.methods.getSomeText().call();
-      console.log(resultText);
+      // Initialize InflaToken contract
+      const contract = new web3.eth.Contract(InflaToken.abi, INF_CONTRACT_ADDRESS); // Contract address
+      setInfContract(contract);
+      // Testing interaction with the contract
+      const result = await contract.methods.getSomeText().call();
+      console.log(result);
     }
     init();
   }, []);
@@ -26,7 +34,9 @@ function App() {
     <div id="screen">
       <Header />
       <Faucet />
-      <Balance />
+      <Balance 
+      contract={infContract}
+      />
       <Transfer />
     </div>
   );

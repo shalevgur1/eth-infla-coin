@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 
-function Balance() {
+function Balance(props) {
   
-  async function handleClick() {
-    console.log("Balance Button Clicked");
-  }
+  const [inputValue, setInputValue] = useState("");
+  const [balance, setBalance] = useState("");
+  const [isHidden, setIsHidden] = useState(true);
 
+  async function handleClick() {
+    if (!inputValue) return;
+    setIsHidden(false);
+    const accountAddress = inputValue;
+    const balanceRes = await props.contract.methods.balanceOf(accountAddress).call();
+    console.log(balanceRes);
+    setBalance(balanceRes);
+  }
 
   return (
     <div className="window white">
@@ -15,6 +23,8 @@ function Balance() {
           id="balance-principal-id"
           type="text"
           placeholder="Enter a account address"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
         />
       </p>
       <p className="trade-buttons">
@@ -25,7 +35,7 @@ function Balance() {
           Check Balance
         </button>
       </p>
-      <p>This account has a balance of XYZ.</p>
+      <p hidden={isHidden}>This account has a balance of {balance.toString()}.</p>
     </div>
   );
 }

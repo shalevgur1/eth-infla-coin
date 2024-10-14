@@ -65,6 +65,7 @@ contract InflaToken is ERC20Burnable {
     }
 
     function getSomeText() public pure returns (string memory) {
+        // Function for testing interaction with the deployed contract
         return "Successful interaction with contract";
     }
 
