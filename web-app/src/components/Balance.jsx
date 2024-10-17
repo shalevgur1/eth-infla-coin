@@ -9,6 +9,7 @@ function Balance(props) {
   async function handleClick() {
     if (!inputValue) return;
     setIsHidden(false);
+    setInputValue("");
     const accountAddress = inputValue;
     const balanceRes = await props.contract.methods.balanceOf(accountAddress).call();
     setBalance(balanceRes);

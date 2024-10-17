@@ -22,12 +22,15 @@ function Faucet(props) {
     // Give specify account tokens
     if (!inputValue) return;
     const accountAddress = inputValue;
+    setInputValue("");
     if (!props.web3.utils.isAddress(accountAddress)) {
       setResultLable("Incorrect account address.");
       return;
     };
     setDisabled(true);
-    const faucetResult = await props.contract.methods.faucet(accountAddress, FAUCET_AMOUNT).send();
+    const faucetResult = await props.contract.methods
+    .faucet(accountAddress, FAUCET_AMOUNT)
+    .send({from: accountAddress});
     console.log(faucetResult);
     // setDisabled(false);
   }
