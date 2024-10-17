@@ -4,7 +4,7 @@ function Transfer(props) {
   
   const [isDisabled, setDisabled] = useState(false);
   const [toAccountInput, setToAccountInput] = useState();
-  const [amountInput, setAmountInput] = useState("");
+  const [amountInput, setAmountInput] = useState();
   const [resultLable, setResultLable] = useState("");
 
   var transferResEvent;
@@ -42,9 +42,10 @@ function Transfer(props) {
 
   async function handleClick() {
     // Transfer specified amount of tokens to specified account
-
+    console.log(toAccountInput);
     // First validation and organization
     if (!toAccountInput || !amountInput) return;
+    console.log("hello");
 
     setDisabled(true);
 
@@ -61,7 +62,7 @@ function Transfer(props) {
     };
 
     // Perform transfer of funds
-    const transferResult = await props.contract.methods
+    await props.contract.methods
     .transferTo("transfer", currentAccount, tranferToAddr, amount)
     .send({from: currentAccount});
 
@@ -79,6 +80,7 @@ function Transfer(props) {
                 type="text"
                 id="transfer-to-id"
                 onChange={(e) => setToAccountInput(e.target.value)}
+                value={toAccountInput}
               />
             </li>
           </ul>
@@ -91,6 +93,7 @@ function Transfer(props) {
                 type="number"
                 id="amount"
                 onChange={(e) => setAmountInput(e.target.value)}
+                value={amountInput}
               />
             </li>
           </ul>
