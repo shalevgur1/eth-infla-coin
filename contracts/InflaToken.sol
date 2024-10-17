@@ -60,18 +60,42 @@ contract InflaToken is ERC20Burnable {
 
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override(ERC20) returns (bool) {
         // Transfer from a defiend sender to a defined recipient
+        // This function is being called on behalf of a third party and require that the 
+        // token holder will give the necessary approving (approving need to be implemented according
+        // to ERC20 standard).
         if (sender != address(0) && recipient != address(0)) return super.transferFrom(sender, recipient, amount);
         return false;
     }
 
+    function transferTo(address sender, address recipient, uint amount) public returns (string memory) {
+        // Allows direct transfer of tokens from the specified sender to the recipient
+        // This function is designed for development purposes to bypass the need for 
+        // third-party approval, enabling immediate transfers.
+        string memory message;
+        uint256 senderBalance = balanceOf(sender);
+        if (recipient == address(0)) {
+            message = "No such address as given address";
+            emit FaucetResult(message);
+            return message;
+        }
+        if (senderBalance < amount) {
+            message = "No sufficient funds to preform the transfer";
+            emit FaucetResult(message);
+            return message;
+        }
+        _transfer(sender, recipient, amount);
+        message = "Funds have been transfered successfully";
+        emit FaucetResult(message);
+        return message;
+    }
+
     function faucet(address account, uint256 amount) public returns (string memory) {
         // Faucet specified amount of tokens to the given account address
-        uint256 centralBankBalance = balanceOf(centralBank);
-        if (account == address(0)) return "No such address as given address";
-        if (centralBankBalance < amount) return "Central Bank does not have sufficient funds";
-        if (account == centralBank) return "Can not transfer funds to this account";
-        _transfer(centralBank, account, amount);
-        return "Funds have been transfered successfully";
+        if (account == centralBank) {
+            emit FaucetResult("Can not transfer funds to this account");
+            return "Can not transfer funds to this account";
+        }
+        else return transferTo(centralBank, account, amount);
     }
 
     function getSomeText() public pure returns (string memory) {
@@ -97,5 +121,6 @@ contract InflaToken is ERC20Burnable {
 // EVENTS
 // -----------------------------------
 
-    event DebugInfo(bool result, address miner);
+    event FaucetResult(string message);
+    //event DebugInfo(bool result);
 }

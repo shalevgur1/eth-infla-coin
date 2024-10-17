@@ -3,23 +3,56 @@ import { FAUCET_AMOUNT } from "../config/constants";
 
 function Faucet(props) {
 
+  // React states
   const [isDisabled, setDisabled] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
   const [resultLable, setResultLable] = useState("");
 
+  // Contract event listners
+  var faucetResEvent;
+
   useEffect( () => {
     async function getSymbol() {
       // Get token symbol
-      console.log(props.contract);
       const symbol = await props.contract.methods.symbol().call();
       setTokenSymbol(symbol.toString());
     }
+
+    async function subscribeEvents() {
+      // subscribe to events on smart contract to get output from
+      // chaging state methods.
+      faucetResEvent = props.contract.events.FaucetResult();
+      faucetResEvent.on("data", (data) => {
+        setResultLable(data.returnValues.message);
+      });
+      faucetResEvent.on("error", (error) => {
+        console.log("faucet error:", error);
+      });
+    }
+
+    // Call useEffect funcitons
     getSymbol();
-  }, []);
+    subscribeEvents();
+
+    // Return cleanup function
+    return async () => {
+      await faucetResEvent.unsubscribe((error, success) => {
+          if (error) {
+              console.error("Error unsubscribing:", error);
+          }
+          if (success) {
+              console.log("Successfully unsubscribed from FaucetResult");
+          }
+      });
+  };
+
+  }, [props.contract]);
 
   async function handleClick(event) {
     // Give specify account tokens
+
+    // First validation and organization
     if (!inputValue) return;
     const accountAddress = inputValue;
     setInputValue("");
@@ -27,12 +60,19 @@ function Faucet(props) {
       setResultLable("Incorrect account address.");
       return;
     };
+
     setDisabled(true);
-    const faucetResult = await props.contract.methods
-    .faucet(accountAddress, FAUCET_AMOUNT)
-    .send({from: accountAddress});
-    console.log(faucetResult);
-    // setDisabled(false);
+
+    // Perform Faucet
+    try {
+      await props.contract.methods
+      .faucet(accountAddress, FAUCET_AMOUNT)
+      .send({from: accountAddress});
+    } catch (err) {
+      console.error("Error calling faucet function:", err);
+    }
+
+    setDisabled(false);
   }
 
   return (
