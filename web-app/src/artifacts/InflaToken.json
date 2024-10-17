@@ -16260,12 +16260,12 @@
         }
       },
       "links": {},
-      "address": "0x60C6d979DCF2172e4d9e6D92D5d2F9BCcd125339",
-      "transactionHash": "0x86e657966c82f86956c293783b004aa291518dffbef2d5f30835ba9dfa687d26"
+      "address": "0x3Ae14C63FF671e618F7aC5aE019bA36cBD3f0b4b",
+      "transactionHash": "0x0a72a742d8e3ffc1814f55a36aad297f0caa88fdba408caaf5582dd825a797f0"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-10-17T16:17:27.010Z",
+  "updatedAt": "2024-10-17T16:52:07.129Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

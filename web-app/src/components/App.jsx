@@ -11,8 +11,6 @@ function App() {
 
   const [web3Client, setWeb3Client] = useState();
   const [infContract, setInfContract] = useState();
-  const [faucetComp, setFaucetComp] = useState();
-  const [balanceComp, setBalanceComp] = useState();
 
   useEffect( () => {
     async function init() {
@@ -28,9 +26,6 @@ function App() {
       // Testing interaction with the contract
       const result = await contract.methods.getSomeText().call();
       console.log(result);
-
-      setFaucetComp(<Faucet contract={infContract} web3={web3Client} />);
-      setBalanceComp(<Balance contract={infContract} />);
     }
     init();
   }, []);
@@ -38,8 +33,20 @@ function App() {
   return (
     <div id="screen">
       <Header />
-      {faucetComp}
-      {balanceComp}
+      {web3Client && infContract ? (
+            <>
+                <Faucet contract={infContract} web3={web3Client} />
+                <Balance contract={infContract} />
+            </>
+        ) : (
+          // Show a loading indicator while waiting for the state to be set
+          <div className="lds-ellipsis center-loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        )}
       <Transfer />
     </div>
   );

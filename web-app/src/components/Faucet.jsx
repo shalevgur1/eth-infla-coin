@@ -11,6 +11,7 @@ function Faucet(props) {
   useEffect( () => {
     async function getSymbol() {
       // Get token symbol
+      console.log(props.contract);
       const symbol = await props.contract.methods.symbol().call();
       setTokenSymbol(symbol.toString());
     }
