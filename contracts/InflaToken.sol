@@ -67,7 +67,7 @@ contract InflaToken is ERC20Burnable {
         return false;
     }
 
-    function transferTo(address sender, address recipient, uint amount) public returns (string memory) {
+    function transferTo(string memory actionType, address sender, address recipient, uint amount) public returns (string memory) {
         // Allows direct transfer of tokens from the specified sender to the recipient
         // This function is designed for development purposes to bypass the need for 
         // third-party approval, enabling immediate transfers.
@@ -75,27 +75,27 @@ contract InflaToken is ERC20Burnable {
         uint256 senderBalance = balanceOf(sender);
         if (recipient == address(0)) {
             message = "No such address as given address";
-            emit FaucetResult(message);
+            emit TransferResult(actionType, message);
             return message;
         }
         if (senderBalance < amount) {
             message = "No sufficient funds to preform the transfer";
-            emit FaucetResult(message);
+            emit TransferResult(actionType, message);
             return message;
         }
         _transfer(sender, recipient, amount);
         message = "Funds have been transfered successfully";
-        emit FaucetResult(message);
+        emit TransferResult(actionType, message);
         return message;
     }
 
     function faucet(address account, uint256 amount) public returns (string memory) {
         // Faucet specified amount of tokens to the given account address
         if (account == centralBank) {
-            emit FaucetResult("Can not transfer funds to this account");
+            emit TransferResult("faucet", "Can not transfer funds to this account");
             return "Can not transfer funds to this account";
         }
-        else return transferTo(centralBank, account, amount);
+        else return transferTo("faucet", centralBank, account, amount);
     }
 
     function getSomeText() public pure returns (string memory) {
@@ -121,6 +121,6 @@ contract InflaToken is ERC20Burnable {
 // EVENTS
 // -----------------------------------
 
-    event FaucetResult(string message);
+    event TransferResult(string actionType, string message);
     //event DebugInfo(bool result);
 }

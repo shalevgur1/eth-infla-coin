@@ -22,9 +22,10 @@ function Faucet(props) {
     async function subscribeEvents() {
       // subscribe to events on smart contract to get output from
       // chaging state methods.
-      faucetResEvent = props.contract.events.FaucetResult();
+      faucetResEvent = props.contract.events.TransferResult();
       faucetResEvent.on("data", (data) => {
-        setResultLable(data.returnValues.message);
+        const {actionType, message} = data.returnValues;
+        if (actionType === "faucet") setResultLable(message);
       });
       faucetResEvent.on("error", (error) => {
         console.log("faucet error:", error);
@@ -42,14 +43,14 @@ function Faucet(props) {
               console.error("Error unsubscribing:", error);
           }
           if (success) {
-              console.log("Successfully unsubscribed from FaucetResult");
+              console.log("Successfully unsubscribed from faucetResEvent");
           }
       });
   };
 
   }, [props.contract]);
 
-  async function handleClick(event) {
+  async function handleClick() {
     // Give specify account tokens
 
     // First validation and organization
