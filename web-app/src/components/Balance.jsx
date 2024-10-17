@@ -11,7 +11,6 @@ function Balance(props) {
     setIsHidden(false);
     const accountAddress = inputValue;
     const balanceRes = await props.contract.methods.balanceOf(accountAddress).call();
-    console.log(balanceRes);
     setBalance(balanceRes);
   }
 

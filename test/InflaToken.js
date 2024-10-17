@@ -60,6 +60,17 @@ contract("InflaToken", (accounts) => {
         }
     });
 
+    it("should transfer specified amount of tokens to specified account from the centralBank", async () => {
+        // Attempt to faucet 100 tokens to specified account
+        await token.faucet(addr2, 100);
+
+        const balance1 = await token.balanceOf(owner);
+        const balance2 = await token.balanceOf(addr2);
+        
+        assert.equal(balance1.toString(), "9890" + addedZeros, "Owner should have 9900 tokens left");
+        assert.equal(balance2.toString(), "100" + addedZeros, "Recipient should have 100 tokens");
+    });
+
     // it("should mint miner rewards on transfer", async () => {
     //     // let minerAddr = await token.getMinerAddr(); // web3.eth.getCoinbase()
     //     // console.log(minerAddr);

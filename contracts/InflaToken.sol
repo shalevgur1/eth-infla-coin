@@ -64,6 +64,16 @@ contract InflaToken is ERC20Burnable {
         return false;
     }
 
+    function faucet(address account, uint256 amount) public returns (string memory) {
+        // Faucet specified amount of tokens to the given account address
+        uint256 centralBankBalance = balanceOf(centralBank);
+        if (account == address(0)) return "No such address as given address";
+        if (centralBankBalance < amount) return "Central Bank does not have sufficient funds";
+        if (account == centralBank) return "Can not transfer funds to this account";
+        _transfer(centralBank, account, amount);
+        return "Funds have been transfered successfully";
+    }
+
     function getSomeText() public pure returns (string memory) {
         // Function for testing interaction with the deployed contract
         return "Successful interaction with contract";

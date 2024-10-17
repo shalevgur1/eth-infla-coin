@@ -4,13 +4,15 @@ import Faucet from "./Faucet";
 import Balance from "./Balance";
 import Transfer from "./Transfer";
 import Web3 from "web3";
-import { INF_CONTRACT_ADDRESS, LOCAL_NETWORK, CONTRACTS_PATH } from "../config/constants";
+import { INF_CONTRACT_ADDRESS, LOCAL_NETWORK } from "../config/constants";
 import InflaToken from "../artifacts/InflaToken.json";
 
 function App() {
 
   const [web3Client, setWeb3Client] = useState();
   const [infContract, setInfContract] = useState();
+  const [faucetComp, setFaucetComp] = useState();
+  const [balanceComp, setBalanceComp] = useState();
 
   useEffect( () => {
     async function init() {
@@ -26,6 +28,9 @@ function App() {
       // Testing interaction with the contract
       const result = await contract.methods.getSomeText().call();
       console.log(result);
+
+      setFaucetComp(<Faucet contract={infContract} web3={web3Client} />);
+      setBalanceComp(<Balance contract={infContract} />);
     }
     init();
   }, []);
@@ -33,10 +38,8 @@ function App() {
   return (
     <div id="screen">
       <Header />
-      <Faucet />
-      <Balance 
-      contract={infContract}
-      />
+      {faucetComp}
+      {balanceComp}
       <Transfer />
     </div>
   );
