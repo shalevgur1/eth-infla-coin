@@ -6,12 +6,18 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./InflaToken.sol";
 
+// InflaToken interface to interact with the InflaToken contract
+interface IInflaToken {
+    function balanceOf(address account) external view returns (uint256);
+    function transferTo(string memory actionType, address sender, address recipient, uint256 amount) external returns (string memory);
+}
+
 contract LoanContract is Ownable {
 
-    // Holds the inflaToken contract address.
+    // Holds the inflaToken contract interface.
     // Holds relevant methods and information,
     // and the central bank.
-    InflaToken public inflaToken;
+    IInflaToken public inflaToken;
 
     // Should be the central bank address
     address payable public contractOwner;
@@ -33,15 +39,20 @@ contract LoanContract is Ownable {
     // Counter and id tracker for the loan map
     uint256 public loanCounter;
 
-    constructor (InflaToken _token) {
+    constructor (address _inflaTokenAddress) {
         // LoanContract initialized with InflaToken
-        inflaToken = _token;
+        inflaToken = IInflaToken(_inflaTokenAddress);
         contractOwner = payable(msg.sender);
     }
 
     function setInterestRate (uint256 precentage) public onlyOwner {
         // Enabling change of interest rate by the central bank.
         INTEREST_RATE = precentage;
+    }
+
+    function getInterestRate () public view returns(uint256) {
+        // Returning interest rate value
+        return INTEREST_RATE;
     }
 
     function borrow(address borrower, uint256 amount, uint256 duration) public onlyOwner returns (uint256 loanId) {
@@ -77,7 +88,7 @@ contract LoanContract is Ownable {
         uint256 repayAmount = loan.amount + ((loan.amount * INTEREST_RATE) / 100);
 
         // Transfer tokens back to the contract
-        token.transferTo('repay', loan.borrower, contractOwner, repayAmount);
+        inflaToken.transferTo('repay', loan.borrower, contractOwner, repayAmount);
         loan.isRepaid = true;
 
         emit LoanRepaid(loan.borrower, loanId, repayAmount);

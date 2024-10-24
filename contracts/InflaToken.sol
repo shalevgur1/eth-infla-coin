@@ -5,6 +5,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
+
+// LoanContract interface to perform loan operations
+interface ILoanContract {
+    function getInterestRate () external view returns(uint256);
+}
+
 contract InflaToken is ERC20Burnable {
     // Smart contract for InflaToken. Acts as a Central Bank 
     // and implements small amount of inflation (between 2%-3% a year).
@@ -16,7 +22,11 @@ contract InflaToken is ERC20Burnable {
     // Block reward for the miner of the block for every transaction in cluded in the block
     uint256 public BLOCK_REWARD = 1;
 
-    address payable public centralBank;
+    // centralBank address - the creator of the contract
+    address payable internal centralBank;
+
+    // Declaration of LoanContract interface
+    ILoanContract internal loanContract;
 
     constructor (uint256 _initialSupply, uint256 _reward)
     ERC20("InflaToken", "INF") {
@@ -29,14 +39,24 @@ contract InflaToken is ERC20Burnable {
         _mint(centralBank, INITIAL_SUPPLY * TOKEN_MULTIPLIER);
     }
 
-    function setBlockReward (uint256 reward) public onlycentralBank {
+    function setBlockReward (uint256 reward) public onlyCentralBank {
         // Change the block reward for a given value. Can change only by the centralBank
         BLOCK_REWARD = reward * TOKEN_MULTIPLIER;
     }
 
-    function getMinerAddr () public view onlycentralBank returns (address) {
+    function setLoanContractAddress (address _loanContractAddress) public onlyCentralBank {
+        // Set the loanContract Address in the loanContract interface
+        loanContract = ILoanContract(_loanContractAddress);
+    }
+
+    function getMinerAddr () public view onlyCentralBank returns (address) {
         // Returns the miner address
         return block.coinbase;
+    }
+
+    function getInterestRate () public view returns (uint256) {
+        // Returning interest rate value
+        return loanContract.getInterestRate();
     }
 
     function _minerReward() internal {
@@ -67,7 +87,7 @@ contract InflaToken is ERC20Burnable {
         return false;
     }
 
-    function transferTo(string memory actionType, address sender, address recipient, uint amount) public returns (string memory) {
+    function transferTo(string memory actionType, address sender, address recipient, uint256 amount) public returns (string memory) {
         // Allows direct transfer of tokens from the specified sender to the recipient
         // This function is designed for development purposes to bypass the need for 
         // third-party approval, enabling immediate transfers.
@@ -103,7 +123,7 @@ contract InflaToken is ERC20Burnable {
         return "Successful interaction with contract";
     }
 
-    function destroy() public onlycentralBank() {
+    function destroy() public onlyCentralBank() {
         // Allow the option to destroy the token supply when it goes on to the blockchain.
         selfdestruct(centralBank);
     }
@@ -112,7 +132,7 @@ contract InflaToken is ERC20Burnable {
 // MODIFIERS
 // -----------------------------------
 
-    modifier onlycentralBank {
+    modifier onlyCentralBank {
         require(msg.sender == centralBank, "Only the centralBank can call this function.");
         _;
     }

@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from "react";
 
-function Transfer(props) {
+function Loan(props) {
   
   const [isDisabled, setDisabled] = useState(false);
-  const [toAccountInput, setToAccountInput] = useState();
+  const [borrowerInput, setborrowerInput] = useState();
   const [amountInput, setAmountInput] = useState();
   const [resultLable, setResultLable] = useState("");
 
-  var transferResEvent;
+  var loanResEvent;
 
   useEffect( () => {
     async function subscribeEvents() {
       // subscribe to events on smart contract to get output from
       // chaging state methods.
-      transferResEvent = props.contract.events.TransferResult();
-      transferResEvent.on("data", (data) => {
+      loanResEvent = props.contract.events.TransferResult();
+      loanResEvent.on("data", (data) => {
         const {actionType, message} = data.returnValues;
-        if (actionType === "transfer") setResultLable(message);
+        if (actionType === "loan") setResultLable(message);
       });
-      transferResEvent.on("error", (error) => {
-        console.log("faucet error:", error);
+      loanResEvent.on("error", (error) => {
+        console.log("loan error:", error);
       });
     }
 
@@ -28,12 +28,12 @@ function Transfer(props) {
 
     // Return cleanup function
     return async () => {
-      await transferResEvent.unsubscribe((error, success) => {
+      await loanResEvent.unsubscribe((error, success) => {
           if (error) {
               console.error("Error unsubscribing:", error);
           }
           if (success) {
-              console.log("Successfully unsubscribed from transferResEvent");
+              console.log("Successfully unsubscribed from loanResEvent");
           }
       });
     };
@@ -42,28 +42,25 @@ function Transfer(props) {
 
   async function handleClick() {
     // Transfer specified amount of tokens to specified account
-    console.log(toAccountInput);
+    console.log(borrowerInput);
     // First validation and organization
-    if (!toAccountInput || !amountInput) return;
+    if (!borrowerInput || !amountInput) return;
 
     setDisabled(true);
 
-    let currentAccount = props.currentAccount;
-    let tranferToAddr = toAccountInput;
+    let tranferToAddr = borrowerInput;
     let amount = amountInput;
 
     setAmountInput("");
-    setToAccountInput("");
+    setborrowerInput("");
 
     if (!props.web3.utils.isAddress(tranferToAddr)) {
       setResultLable("Incorrect account address.");
       return;
     };
 
-    // Perform transfer of funds
-    await props.contract.methods
-    .transferTo("transfer", currentAccount, tranferToAddr, amount)
-    .send({from: currentAccount});
+    // Perform Loan taking
+    await props.contract.methods;
 
     setDisabled(false);
   }
@@ -72,14 +69,14 @@ function Transfer(props) {
     <div className="window white">
       <div className="transfer">
         <fieldset>
-          <legend>To Account:</legend>
+          <legend>Borrower:</legend>
           <ul>
             <li>
               <input
                 type="text"
                 id="transfer-to-id"
-                onChange={(e) => setToAccountInput(e.target.value)}
-                value={toAccountInput}
+                onChange={(e) => setborrowerInput(e.target.value)}
+                value={borrowerInput}
               />
             </li>
           </ul>
@@ -99,7 +96,7 @@ function Transfer(props) {
         </fieldset>
         <p className="trade-buttons">
           <button id="btn-transfer" onClick={handleClick} disabled={isDisabled} >
-            Transfer
+            Take Loan
           </button>
         </p>
         <p>
@@ -110,4 +107,4 @@ function Transfer(props) {
   );
 }
 
-export default Transfer;
+export default Loan;

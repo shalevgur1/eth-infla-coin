@@ -3,6 +3,7 @@ import Header from "./Header";
 import Faucet from "./Faucet";
 import Balance from "./Balance";
 import Transfer from "./Transfer";
+import Loan from "./Loan";
 import Web3 from "web3";
 import { INF_CONTRACT_ADDRESS, LOCAL_NETWORK } from "../config/constants";
 import InflaToken from "../artifacts/InflaToken.json";
@@ -51,6 +52,10 @@ function App() {
                 currentAccount={currentAccount} 
                 contract={infContract}
                 web3={web3Client}/>
+                <Loan 
+                contract={infContract}
+                web3={web3Client}
+                />
             </>
         ) : (
           // Show a loading indicator while waiting for the state to be set
