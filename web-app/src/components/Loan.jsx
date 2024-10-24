@@ -1,22 +1,46 @@
 import React, { useState, useEffect } from "react";
 
+// Function to convert timestamp to HH:MIN:SEC
+function formatTimestampToTime(timestamp) {
+  console.log(timestamp);
+  const date = new Date(timestamp * 1000); // Convert timestamp (in seconds) to milliseconds
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 function Loan(props) {
   
   const [isDisabled, setDisabled] = useState(false);
-  const [borrowerInput, setborrowerInput] = useState();
   const [amountInput, setAmountInput] = useState();
+  const [durationInput, setDurationInput] = useState();
   const [resultLable, setResultLable] = useState("");
+  const [interestRate, setInterestRate] = useState();
 
   var loanResEvent;
 
   useEffect( () => {
+    async function getInterestRate() {
+        // Get current Central Bank Interest Rate
+        const IR = await props.contract.methods.getInterestRate().call();
+        setInterestRate(IR.toString());
+    }
+
     async function subscribeEvents() {
       // subscribe to events on smart contract to get output from
       // chaging state methods.
-      loanResEvent = props.contract.events.TransferResult();
+      loanResEvent = props.contract.events.BorrowResult();
       loanResEvent.on("data", (data) => {
-        const {actionType, message} = data.returnValues;
-        if (actionType === "loan") setResultLable(message);
+        const {loanId, repayAmount, dueDate, message} = data.returnValues;
+        if (loanId != 0) {
+            let dueDateTime = formatTimestampToTime(dueDate);
+            let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} | Due date: ${dueDateTime}`;
+            setResultLable(fullMessage);
+        } else {
+            setResultLable(message);
+        }
       });
       loanResEvent.on("error", (error) => {
         console.log("loan error:", error);
@@ -24,6 +48,7 @@ function Loan(props) {
     }
 
     // Call useEffect funcitons
+    getInterestRate();
     subscribeEvents();
 
     // Return cleanup function
@@ -41,46 +66,39 @@ function Loan(props) {
   }, [props.contract]);
 
   async function handleClick() {
-    // Transfer specified amount of tokens to specified account
-    console.log(borrowerInput);
+    // Borrow specified amount of tokens to specified account form the Central Bank
     // First validation and organization
-    if (!borrowerInput || !amountInput) return;
+    if (!amountInput || !durationInput) return;
 
     setDisabled(true);
 
-    let tranferToAddr = borrowerInput;
+    let borrower = props.currentAccount;
     let amount = amountInput;
+    let duration = durationInput;
+
+    console.log(borrower, amount, duration);
 
     setAmountInput("");
-    setborrowerInput("");
+    setDurationInput("");
 
-    if (!props.web3.utils.isAddress(tranferToAddr)) {
+    if (!props.web3.utils.isAddress(borrower)) {
       setResultLable("Incorrect account address.");
       return;
     };
 
-    // Perform Loan taking
-    await props.contract.methods;
+    // Perform Loan
+    await props.contract.methods
+    .borrow(borrower, amount, duration)
+    .send({from: borrower});
 
     setDisabled(false);
   }
 
   return (
     <div className="window white">
+    <label>The current Interest Rate for loans is {interestRate}% .</label>
+    <div style={{ marginBottom: "20px" }}></div>
       <div className="transfer">
-        <fieldset>
-          <legend>Borrower:</legend>
-          <ul>
-            <li>
-              <input
-                type="text"
-                id="transfer-to-id"
-                onChange={(e) => setborrowerInput(e.target.value)}
-                value={borrowerInput}
-              />
-            </li>
-          </ul>
-        </fieldset>
         <fieldset>
           <legend>Amount:</legend>
           <ul>
@@ -90,6 +108,19 @@ function Loan(props) {
                 id="amount"
                 onChange={(e) => setAmountInput(e.target.value)}
                 value={amountInput}
+              />
+            </li>
+          </ul>
+        </fieldset>
+        <fieldset>
+          <legend>Duration (sec):</legend>
+          <ul>
+            <li>
+              <input
+                type="number"
+                id="amount"
+                onChange={(e) => setDurationInput(e.target.value)}
+                value={durationInput}
               />
             </li>
           </ul>

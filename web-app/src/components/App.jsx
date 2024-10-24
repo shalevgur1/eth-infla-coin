@@ -26,7 +26,7 @@ function App() {
       // Get accounts array
       const accountsAddr = await web3.eth.getAccounts();
       setCurrentAccount(accountsAddr[1]);
-      console.log(`Current account address: ${currentAccount}`);
+      console.log(`Current account address: ${accountsAddr[1]}`);
 
       // Initialize InflaToken contract
       const contract = new web3.eth.Contract(InflaToken.abi, INF_CONTRACT_ADDRESS); // Contract address
@@ -55,6 +55,7 @@ function App() {
                 <Loan 
                 contract={infContract}
                 web3={web3Client}
+                currentAccount={currentAccount}
                 />
             </>
         ) : (

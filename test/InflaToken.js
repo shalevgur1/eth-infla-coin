@@ -67,8 +67,19 @@ contract("InflaToken", (accounts) => {
         const balance1 = await token.balanceOf(owner);
         const balance2 = await token.balanceOf(addr2);
         
-        assert.equal(balance1.toString(), "9890" + addedZeros, "Owner should have 9900 tokens left");
+        assert.equal(balance1.toString(), "9890" + addedZeros, "Owner should have 9890 tokens left");
         assert.equal(balance2.toString(), "100" + addedZeros, "Recipient should have 100 tokens");
+    });
+
+    it("should borrow specified amount of tokens to specified account from the centralBank", async () => {
+        // Attempt to borrow 100 tokens to specified account
+        await token.borrow(addr2, 100, 5);
+
+        const balance1 = await token.balanceOf(owner);
+        const balance2 = await token.balanceOf(addr2);
+        
+        assert.equal(balance1.toString(), "9790" + addedZeros, "Owner should have 9790 tokens left");
+        assert.equal(balance2.toString(), "200" + addedZeros, "Recipient should have 200 tokens");
     });
 
     // it("should mint miner rewards on transfer", async () => {

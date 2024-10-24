@@ -19,6 +19,9 @@ contract LoanContract is Ownable {
     // and the central bank.
     IInflaToken public inflaToken;
 
+    // InflaToken address as central bank
+    address payable public inflaTokenAddress;
+
     // Should be the central bank address
     address payable public contractOwner;
 
@@ -36,16 +39,17 @@ contract LoanContract is Ownable {
 
     // Create a key:value map of loans
     mapping(uint256 => Loan) public loans;
-    // Counter and id tracker for the loan map
-    uint256 public loanCounter;
+    // Counter and id tracker for the loan map. Loan Id 0 represents an error.
+    uint256 public loanCounter = 1;
 
     constructor (address _inflaTokenAddress) {
         // LoanContract initialized with InflaToken
         inflaToken = IInflaToken(_inflaTokenAddress);
+        inflaTokenAddress = payable(_inflaTokenAddress);
         contractOwner = payable(msg.sender);
     }
 
-    function setInterestRate (uint256 precentage) public onlyOwner {
+    function setInterestRate (uint256 precentage) public onlyCentralBank {
         // Enabling change of interest rate by the central bank.
         INTEREST_RATE = precentage;
     }
@@ -55,31 +59,33 @@ contract LoanContract is Ownable {
         return INTEREST_RATE;
     }
 
-    function borrow(address borrower, uint256 amount, uint256 duration) public onlyOwner returns (uint256 loanId) {
+    function borrow(address borrower, uint256 amount, uint256 duration) public onlyCentralBank returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
         // Borrow InflaToken function, setting a due date
-        require(inflaToken.balanceOf(contractOwner) >= amount, "Insufficient contract token balance");
-        loanCounter++;
-        uint256 dueDate = block.timestamp + duration;
+
+        // Initial balance check. Loan Id 0 represents error.
+        if(inflaToken.balanceOf(contractOwner) < amount) return (0, 0, 0, "Insufficient contract token balance");
+
+        uint256 resDueDate = block.timestamp + duration;
 
         loans[loanCounter] = Loan({
             borrower: borrower,
             amount: amount,
             interest: INTEREST_RATE,
-            dueDate: dueDate,
+            dueDate: resDueDate,
             isRepaid: false
         });
+
+        loanCounter++;
 
         // Transfer tokens from the contract to the borrower
         inflaToken.transferTo('borrow', contractOwner, borrower, amount);
 
-        emit LoanBorrowed(borrower, loanCounter, amount, dueDate);
-
         // Return loan id
-        return loanCounter;
+        return (loanCounter, amount + ((amount * INTEREST_RATE) / 100), resDueDate, "The loan has been approved and processed successfully");
     }
 
     // Repay function to repay borrowed tokens
-    function repay(uint256 loanId) public onlyOwner {
+    function repay(uint256 loanId) public onlyCentralBank {
         Loan storage loan = loans[loanId];
         require(loan.isRepaid == false, "Loan already repaid");
         require(block.timestamp >= loan.dueDate, "Loan is not overdue");
@@ -90,8 +96,6 @@ contract LoanContract is Ownable {
         // Transfer tokens back to the contract
         inflaToken.transferTo('repay', loan.borrower, contractOwner, repayAmount);
         loan.isRepaid = true;
-
-        emit LoanRepaid(loan.borrower, loanId, repayAmount);
     }
 
     function isLoanOverdue(uint256 loanId) public view returns (bool) {
@@ -106,10 +110,14 @@ contract LoanContract is Ownable {
         return loan.isRepaid;
     }
 
+
 // -----------------------------------
-// EVENTS
+// MODIFIERS
 // -----------------------------------
 
-    event LoanBorrowed(address borrower, uint256 loanId, uint256 amount, uint256 dueDate);
-    event LoanRepaid(address borrower, uint256 loanId, uint256 amount);
+    modifier onlyCentralBank {
+        require(msg.sender == inflaTokenAddress, "Only the centralBank can call this function.");
+        _;
+    }
+
 }

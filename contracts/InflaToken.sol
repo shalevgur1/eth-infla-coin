@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 // LoanContract interface to perform loan operations
 interface ILoanContract {
     function getInterestRate () external view returns(uint256);
+    function borrow (address borrower, uint256 amount, uint256 duration) external returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory);
 }
 
 contract InflaToken is ERC20Burnable {
@@ -118,6 +119,14 @@ contract InflaToken is ERC20Burnable {
         else return transferTo("faucet", centralBank, account, amount);
     }
 
+    function borrow (address borrower, uint256 amount, uint256 duration) public returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
+        // Borrow from Central Bank with current interest rate.
+        // Uses LoanContract implementation.
+        (uint256 resLoanId, uint256 resRepayAmount, uint256 resDueDate, string memory resMessage) = loanContract.borrow(borrower, amount, duration);
+        emit BorrowResult(resLoanId, resRepayAmount, resDueDate, resMessage);
+        return (resLoanId, resRepayAmount, resDueDate, resMessage);
+    }
+
     function getSomeText() public pure returns (string memory) {
         // Function for testing interaction with the deployed contract
         return "Successful interaction with contract";
@@ -142,5 +151,6 @@ contract InflaToken is ERC20Burnable {
 // -----------------------------------
 
     event TransferResult(string actionType, string message);
+    event BorrowResult(uint256 loanId, uint256 repayAmount, uint256 dueDate, string message);
     //event DebugInfo(bool result);
 }
