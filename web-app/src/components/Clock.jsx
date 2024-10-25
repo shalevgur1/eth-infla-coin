@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 
-function Clock({ startTime = 0, countdown = false, isHidden=false }) {
+function Clock({ startTime = 0, countdown = false, isHidden=false, onTimerEnd }) {
   const [time, setTime] = useState(0);
 
   useEffect(() => {
     setTime(startTime);
     const intervalId = setInterval(() => {
         setTime(prevTime => {
-            // For countdown, ensure it doesn't go below zero
             if (countdown) {
-              return Math.max(prevTime - 1, 0); // Don't go below 0
-            } else {
-              return prevTime + 1; // Increment time
+              const newTime = prevTime - 1;
+              // Check if timer got to 0 or the timer should be hidden (when Repay is pressed)
+              if (newTime === 0 && startTime != 0) {
+                clearInterval(intervalId);
+                // Call the timer end callback if defined
+                onTimerEnd && onTimerEnd();
+                return 0;
+              }
+              return newTime;
             }
+            return prevTime + 1;
           });
     }, 1000);
 

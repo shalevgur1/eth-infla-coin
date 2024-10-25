@@ -18,12 +18,13 @@ function formatTimestampToTime(timestamp) {
 function Loan(props) {
   
   const [isDisabled, setDisabled] = useState(false);
-  const [amountInput, setAmountInput] = useState();
-  const [durationInput, setDurationInput] = useState();
+  const [amountInput, setAmountInput] = useState("");
+  const [durationInput, setDurationInput] = useState("");
   const [resultLable, setResultLable] = useState("");
   const [interestRate, setInterestRate] = useState();
   const [isHidden, setIsHidden] = useState(true);
   const [time, setTime] = useState(0);
+  const [repayAmount, setRepayAmount] = useState(0);
 
   var loanResEvent;
 
@@ -43,8 +44,9 @@ function Loan(props) {
         if (loanId != 0) {
             // Set loan information lable
             let dueDateTime = formatTimestampToTime(dueDate);
-            let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} | Due date: ${dueDateTime}
+            let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} $INF | Due date: ${dueDateTime}
             | | | | | | Check remaining time to return the loan above.`;
+            setRepayAmount(repayAmount);
             setResultLable(fullMessage);
 
             // Set timer and repay button
@@ -107,7 +109,15 @@ function Loan(props) {
       from: borrower,
       gas: 200000
     });
+  }
 
+  function loanRepayment() {
+    // Handle loan repayment and frontend behaviour when
+    // the loan duration ends
+    setIsHidden(true);
+    setResultLable(`The loan term has ended. The loan, along with interest, 
+                    has been successfully repaid – amount: ${repayAmount} $INF`);
+    setRepayAmount(0);
     setDisabled(false);
   }
 
@@ -117,6 +127,7 @@ function Loan(props) {
       countdown={true}
       startTime={time}
       isHidden={isHidden}
+      onTimerEnd={loanRepayment}
       />
     <label>The current Interest Rate for loans is {interestRate}% .</label>
     <div style={{ marginBottom: "20px" }}></div>
@@ -151,6 +162,11 @@ function Loan(props) {
           <button id="btn-transfer" onClick={handleClick} disabled={isDisabled} >
             Take Loan
           </button>
+          {!isHidden && (
+            <button id="btn-transfer" onClick={loanRepayment}>
+              Repay
+            </button>
+          )}
         </p>
         <p>
           {resultLable}
