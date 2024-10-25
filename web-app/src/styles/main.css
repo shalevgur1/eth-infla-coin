@@ -191,6 +191,19 @@ html {
     transform: translate(-50%, -50%); /* This centers the element exactly in the middle */
   }
 
+  .clock {
+    font-size: 1.2rem; 
+    text-align: center; 
+    margin-bottom: 10px;
+  }
+  
+  
+  .clock-container {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+  }
+
   .lds-ellipsis {
     display: inline-block;
     position: relative;

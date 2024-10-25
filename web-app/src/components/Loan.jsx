@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import Clock from "./Clock";
 
 // Function to convert timestamp to HH:MIN:SEC
 function formatTimestampToTime(timestamp) {
-  console.log(timestamp); // Log the timestamp for debugging
   // Ensure the timestamp is a BigInt and convert it to a Number
   const timeInMilliseconds = Number(timestamp) * 1000; // Convert to milliseconds
   const date = new Date(timeInMilliseconds); // Create a Date object from the timestamp
@@ -22,6 +22,8 @@ function Loan(props) {
   const [durationInput, setDurationInput] = useState();
   const [resultLable, setResultLable] = useState("");
   const [interestRate, setInterestRate] = useState();
+  const [isHidden, setIsHidden] = useState(true);
+  const [time, setTime] = useState(0);
 
   var loanResEvent;
 
@@ -39,9 +41,18 @@ function Loan(props) {
       loanResEvent.on("data", (data) => {
         const {loanId, repayAmount, dueDate, message} = data.returnValues;
         if (loanId != 0) {
+            // Set loan information lable
             let dueDateTime = formatTimestampToTime(dueDate);
-            let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} | Due date: ${dueDateTime}`;
+            let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} | Due date: ${dueDateTime}
+            | | | | | | Check remaining time to return the loan above.`;
             setResultLable(fullMessage);
+
+            // Set timer and repay button
+            // eslint-disable-next-line no-undef
+            const currentTime = BigInt(Math.floor(Date.now() / 1000));
+            const timeLeft = Number(dueDate - currentTime);
+            setTime(timeLeft);
+            setIsHidden(false);
         } else {
             setResultLable(message);
         }
@@ -83,6 +94,7 @@ function Loan(props) {
     setAmountInput("");
     setDurationInput("");
 
+    // Check valid address
     if (!props.web3.utils.isAddress(borrower)) {
       setResultLable("Incorrect account address.");
       return;
@@ -101,6 +113,11 @@ function Loan(props) {
 
   return (
     <div className="window white">
+      <Clock
+      countdown={true}
+      startTime={time}
+      isHidden={isHidden}
+      />
     <label>The current Interest Rate for loans is {interestRate}% .</label>
     <div style={{ marginBottom: "20px" }}></div>
       <div className="transfer">
