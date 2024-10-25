@@ -59,7 +59,7 @@ contract LoanContract {
         return INTEREST_RATE;
     }
 
-    function borrow(address borrower, uint256 amount, uint256 duration) public returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
+    function borrow(address borrower, uint256 amount, uint256 duration) public onlyCentralBank returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
         // Borrow InflaToken function, setting a due date
 
         // Initial balance check. Loan Id 0 represents error.
@@ -70,7 +70,7 @@ contract LoanContract {
         // Saving loan information to storage
         Loan storage l = loans[loanCounter];
         l.borrowerAddress = borrower;
-        l.borrowedAmount = 5;
+        l.borrowedAmount = amount;
         l.interest = INTEREST_RATE;
         l.lDueDate = resDueDate;
         l.isRepaid = false;
@@ -85,10 +85,10 @@ contract LoanContract {
     }
 
     // Repay function to repay borrowed tokens
-    function repay(uint256 loanId) public onlyCentralBank {
+    function repay (uint256 loanId) public onlyCentralBank returns (string memory, uint256 amount) {
         Loan storage loan = loans[loanId];
-        require(loan.isRepaid == false, "Loan already repaid");
-        require(block.timestamp >= loan.lDueDate, "Loan is not overdue");
+
+        if(loan.isRepaid == true) return ("Loan already repaid", 0);
 
         // Calculate repay amount with interest
         uint256 repayAmount = loan.borrowedAmount + ((loan.borrowedAmount * INTEREST_RATE) / 100);
@@ -96,6 +96,7 @@ contract LoanContract {
         // Transfer tokens back to the contract
         inflaToken.transferTo('repay', loan.borrowerAddress, contractOwner, repayAmount);
         loan.isRepaid = true;
+        return ("Loan repayed successfuly", repayAmount);
     }
 
     function isLoanOverdue(uint256 loanId) public view returns (bool) {

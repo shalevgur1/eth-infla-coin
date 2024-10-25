@@ -24,9 +24,10 @@ function Loan(props) {
   const [interestRate, setInterestRate] = useState();
   const [isHidden, setIsHidden] = useState(true);
   const [time, setTime] = useState(0);
-  const [repayAmount, setRepayAmount] = useState(0);
+  const [currentLoanId, setLoanId] = useState();
 
   var loanResEvent;
+  var repayLoanEvent;
 
   useEffect( () => {
     async function getInterestRate() {
@@ -38,15 +39,17 @@ function Loan(props) {
     async function subscribeEvents() {
       // subscribe to events on smart contract to get output from
       // chaging state methods.
+
+      // Subscribe to Borrow event
       loanResEvent = props.contract.events.BorrowResult();
       loanResEvent.on("data", (data) => {
         const {loanId, repayAmount, dueDate, message} = data.returnValues;
         if (loanId != 0) {
             // Set loan information lable
+            setLoanId(loanId);
             let dueDateTime = formatTimestampToTime(dueDate);
             let fullMessage = `${message}. Loan id: ${loanId} | Repay amount: ${repayAmount} $INF | Due date: ${dueDateTime}
             | | | | | | Check remaining time to return the loan above.`;
-            setRepayAmount(repayAmount);
             setResultLable(fullMessage);
 
             // Set timer and repay button
@@ -61,6 +64,21 @@ function Loan(props) {
       });
       loanResEvent.on("error", (error) => {
         console.log("loan error:", error);
+      });
+
+      // Subscribe to Repay event
+      repayLoanEvent = props.contract.events.RepayResult();
+      repayLoanEvent.on("data", (data) => {
+        const {message, repayAmount} = data.returnValues;
+        if (message == "Loan repayed successfuly") {
+          setResultLable(`The loan term has ended. The loan, along with interest, 
+                          has been successfully repaid – Repayed amount: ${repayAmount} $INF`);
+          setLoanId();
+          setIsHidden(true);
+          setDisabled(false);
+        } else {
+          setResultLable(message);
+        }
       });
     }
 
@@ -111,20 +129,22 @@ function Loan(props) {
     });
   }
 
-  function loanRepayment() {
+  async function loanRepayment() {
     // Handle loan repayment and frontend behaviour when
     // the loan duration ends
-    setIsHidden(true);
-    setResultLable(`The loan term has ended. The loan, along with interest, 
-                    has been successfully repaid – amount: ${repayAmount} $INF`);
-    setRepayAmount(0);
-    setDisabled(false);
+
+    // Perform repayment
+    await props.contract.methods
+    .repayLoan(currentLoanId)
+    .send({
+      from: props.currentAccount,
+      gas: 200000
+    });
   }
 
   return (
     <div className="window white">
       <Clock
-      countdown={true}
       startTime={time}
       isHidden={isHidden}
       onTimerEnd={loanRepayment}

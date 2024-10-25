@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 
-function Clock({ startTime = 0, countdown = false, isHidden=false, onTimerEnd }) {
+function Clock({ startTime = 0, isHidden=false, onTimerEnd }) {
   const [time, setTime] = useState(0);
 
   useEffect(() => {
     setTime(startTime);
+    console.log(time);
     const intervalId = setInterval(() => {
         setTime(prevTime => {
-            if (countdown) {
-              const newTime = prevTime - 1;
-              // Check if timer got to 0 or the timer should be hidden (when Repay is pressed)
-              if (newTime === 0 && startTime != 0) {
-                clearInterval(intervalId);
-                // Call the timer end callback if defined
-                onTimerEnd && onTimerEnd();
-                return 0;
-              }
-              return newTime;
+            const newTime = prevTime - 1;
+            // Check if timer got to 0 or the timer should be hidden (when Repay is pressed)
+            if ((newTime === 0 && startTime != 0) && !isHidden) {
+              clearInterval(intervalId);
+              // Call the timer end callback if defined
+              onTimerEnd && onTimerEnd();
+              return 0;
+            } else if (isHidden) {
+              clearInterval(intervalId);
             }
-            return prevTime + 1;
+            return newTime;
           });
     }, 1000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [countdown, startTime]);
+  }, [startTime, isHidden]);
 
   const formatTime = seconds => {
     const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
