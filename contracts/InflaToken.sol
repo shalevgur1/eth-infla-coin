@@ -119,7 +119,7 @@ contract InflaToken is ERC20Burnable {
         else return transferTo("faucet", centralBank, account, amount);
     }
 
-    function borrow (address borrower, uint256 amount, uint256 duration) public returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
+    function getLoan (address borrower, uint256 amount, uint256 duration) public returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
         // Borrow from Central Bank with current interest rate.
         // Uses LoanContract implementation.
         (uint256 resLoanId, uint256 resRepayAmount, uint256 resDueDate, string memory resMessage) = loanContract.borrow(borrower, amount, duration);

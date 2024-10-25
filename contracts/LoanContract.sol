@@ -12,7 +12,7 @@ interface IInflaToken {
     function transferTo(string memory actionType, address sender, address recipient, uint256 amount) external returns (string memory);
 }
 
-contract LoanContract is Ownable {
+contract LoanContract {
 
     // Holds the inflaToken contract interface.
     // Holds relevant methods and information,
@@ -30,10 +30,10 @@ contract LoanContract is Ownable {
 
     // Include all the Loan necessary info
     struct Loan {
-        address borrower;
-        uint256 amount;
+        address borrowerAddress;
+        uint256 borrowedAmount;
         uint256 interest;
-        uint256 dueDate;
+        uint256 lDueDate;
         bool isRepaid;
     }
 
@@ -59,7 +59,7 @@ contract LoanContract is Ownable {
         return INTEREST_RATE;
     }
 
-    function borrow(address borrower, uint256 amount, uint256 duration) public onlyCentralBank returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
+    function borrow(address borrower, uint256 amount, uint256 duration) public returns (uint256 loanId, uint256 repayAmount, uint256 dueDate, string memory) {
         // Borrow InflaToken function, setting a due date
 
         // Initial balance check. Loan Id 0 represents error.
@@ -67,41 +67,41 @@ contract LoanContract is Ownable {
 
         uint256 resDueDate = block.timestamp + duration;
 
-        loans[loanCounter] = Loan({
-            borrower: borrower,
-            amount: amount,
-            interest: INTEREST_RATE,
-            dueDate: resDueDate,
-            isRepaid: false
-        });
+        // Saving loan information to storage
+        Loan storage l = loans[loanCounter];
+        l.borrowerAddress = borrower;
+        l.borrowedAmount = 5;
+        l.interest = INTEREST_RATE;
+        l.lDueDate = resDueDate;
+        l.isRepaid = false;
 
+        uint256 returnId = loanCounter;
         loanCounter++;
 
         // Transfer tokens from the contract to the borrower
         inflaToken.transferTo('borrow', contractOwner, borrower, amount);
-
-        // Return loan id
-        return (loanCounter, amount + ((amount * INTEREST_RATE) / 100), resDueDate, "The loan has been approved and processed successfully");
+        // Return loan id and relevant information
+        return (returnId, amount + ((amount * INTEREST_RATE) / 100), resDueDate, "The loan has been approved and processed successfully");
     }
 
     // Repay function to repay borrowed tokens
     function repay(uint256 loanId) public onlyCentralBank {
         Loan storage loan = loans[loanId];
         require(loan.isRepaid == false, "Loan already repaid");
-        require(block.timestamp >= loan.dueDate, "Loan is not overdue");
+        require(block.timestamp >= loan.lDueDate, "Loan is not overdue");
 
         // Calculate repay amount with interest
-        uint256 repayAmount = loan.amount + ((loan.amount * INTEREST_RATE) / 100);
+        uint256 repayAmount = loan.borrowedAmount + ((loan.borrowedAmount * INTEREST_RATE) / 100);
 
         // Transfer tokens back to the contract
-        inflaToken.transferTo('repay', loan.borrower, contractOwner, repayAmount);
+        inflaToken.transferTo('repay', loan.borrowerAddress, contractOwner, repayAmount);
         loan.isRepaid = true;
     }
 
     function isLoanOverdue(uint256 loanId) public view returns (bool) {
         // Check if loan is overdue
         Loan storage loan = loans[loanId];
-        return block.timestamp > loan.dueDate && !loan.isRepaid;
+        return block.timestamp > loan.lDueDate && !loan.isRepaid;
     }
 
     function isLoanRepaid(uint256 loanId) public view returns (bool) {
@@ -119,5 +119,7 @@ contract LoanContract is Ownable {
         require(msg.sender == inflaTokenAddress, "Only the centralBank can call this function.");
         _;
     }
+
+    event DebugBorrow(string message);
 
 }

@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 
 // Function to convert timestamp to HH:MIN:SEC
 function formatTimestampToTime(timestamp) {
-  console.log(timestamp);
-  const date = new Date(timestamp * 1000); // Convert timestamp (in seconds) to milliseconds
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+  console.log(timestamp); // Log the timestamp for debugging
+  // Ensure the timestamp is a BigInt and convert it to a Number
+  const timeInMilliseconds = Number(timestamp) * 1000; // Convert to milliseconds
+  const date = new Date(timeInMilliseconds); // Create a Date object from the timestamp
+  // Get hours, minutes, and seconds in UTC format
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
 
-  return `${hours}:${minutes}:${seconds}`;
+  return `${hours}:${minutes}:${seconds}`; // Return the formatted time
 }
+
 
 function Loan(props) {
   
@@ -76,8 +80,6 @@ function Loan(props) {
     let amount = amountInput;
     let duration = durationInput;
 
-    console.log(borrower, amount, duration);
-
     setAmountInput("");
     setDurationInput("");
 
@@ -88,8 +90,11 @@ function Loan(props) {
 
     // Perform Loan
     await props.contract.methods
-    .borrow(borrower, amount, duration)
-    .send({from: borrower});
+    .getLoan(borrower, amount, duration)
+    .send({
+      from: borrower,
+      gas: 200000
+    });
 
     setDisabled(false);
   }
